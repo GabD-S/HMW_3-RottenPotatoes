@@ -2,25 +2,37 @@
 
 <%= link_to 'Adicionar Filme', new_movie_path %>
 
-<table>
+<%= form_with url: movies_path, method: :get, local: true, id: 'ratings_form' do %>
+  <fieldset>
+    <legend>Incluir:</legend>
+    <% @all_ratings.each do |rating| %>
+      <%= check_box_tag "ratings[#{rating}]", 1, @selected_ratings.include?(rating), id: "ratings_#{rating}" %>
+      <%= label_tag "ratings_#{rating}", rating %>
+    <% end %>
+    <%= hidden_field_tag :sort_by, @sort_by if @sort_by.present? %>
+    <%= submit_tag 'Refresh', name: 'ratings_submit', id: 'ratings_submit' %>
+  </fieldset>
+<% end %>
+
+<table id="movies">
   <thead>
     <tr>
       <th id="title_header" class="<%= 'hilite' if @sort_by == 'title' %>">
-        <%= link_to 'Título', movies_path(sort_by: 'title'), id: :title_header %>
+        <%= link_to 'Movie Title', movies_path(sort_by: 'title', ratings: @selected_ratings.index_with { 1 }) %>
       </th>
       <th>Classificação</th>
       <th id="release_date_header" class="<%= 'hilite' if @sort_by == 'release_date' %>">
-        <%= link_to 'Data de Lançamento', movies_path(sort_by: 'release_date'), id: :release_date_header %>
+        <%= link_to 'Release Date', movies_path(sort_by: 'release_date', ratings: @selected_ratings.index_with { 1 }) %>
       </th>
       <th>Ações</th>
     </tr>
   </thead>
   <tbody>
     <% @movies.each do |movie| %>
-      <tr>
-        <td><%= link_to movie.title, movie_path(movie), id: :title_header %></td>
+      <tr id="movie-<%= movie.id %>">
+        <td><%= link_to movie.title, movie_path(movie) %></td>
         <td><%= movie.rating %></td>
-        <td><%= link_to movie.release_date&.strftime('%d/%m/%Y'), movie_path(movie), id: :release_date_header %></td>
+        <td><%= link_to movie.release_date&.strftime('%d/%m/%Y'), movie_path(movie) %></td>
         <td>
           <%= link_to 'Editar', edit_movie_path(movie) %> |
           <%= link_to 'Excluir', movie_path(movie), data: { turbo_method: :delete, turbo_confirm: 'Tem certeza?' } %>
