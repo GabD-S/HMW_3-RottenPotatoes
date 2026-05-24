@@ -1,11 +1,20 @@
 class MoviesController < ApplicationController
+  ALL_RATINGS = %w[G PG PG-13 R].freeze
+
   def index
+    @all_ratings = ALL_RATINGS
     @sort_by = params[:sort_by]
-    if @sort_by == 'title' || @sort_by == 'release_date'
-      @movies = Movie.order(@sort_by)
-    else
-      @movies = Movie.all
-    end
+
+    ratings_param = params[:ratings]
+    @selected_ratings = if ratings_param.is_a?(ActionController::Parameters) || ratings_param.is_a?(Hash)
+                          ratings_param.keys.map(&:to_s)
+                        else
+                          @all_ratings.dup
+                        end
+
+    movies = Movie.where(rating: @selected_ratings)
+    movies = movies.order(@sort_by) if %w[title release_date].include?(@sort_by)
+    @movies = movies
   end
 
   def show
